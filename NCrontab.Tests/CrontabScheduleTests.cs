@@ -377,6 +377,20 @@ namespace NCrontab.Tests
         public void NonNumericFieldRangeComponent(string expression, bool includingSeconds) =>
             BadField(expression, includingSeconds);
 
+        [Test]
+        public void DayRangeThroughSunday()
+        {
+            var schedule = CrontabSchedule.Parse("30 13 * * SAT-MON");
+            var expectedDays = new[] {DayOfWeek.Saturday, DayOfWeek.Sunday, DayOfWeek.Monday};
+            var now = DateTime.UtcNow;
+            var occurrences = schedule.GetNextOccurrences(now, now.AddDays(7));
+            foreach (var occurrence in occurrences)
+            {
+                var dayOfWeek = occurrence.DayOfWeek;
+                Assert.That(expectedDays, Contains.Item(dayOfWeek));
+            }
+        }
+
         static void CronCall(string startTimeString, string cronExpression, string nextTimeString, ParseOptions options)
         {
             var schedule = CrontabSchedule.Parse(cronExpression, options);
